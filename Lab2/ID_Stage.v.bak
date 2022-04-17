@@ -78,6 +78,14 @@ module ID_Stage(
 	);
 
 	wire cond_state;
+
+	Condition_Check condition_check(
+		.cond(instruction_in[31:28]),
+		.SR(status_register_in),
+		.condition_status (cond_state)
+	;
+
+
 	assign control_unit_mux_enable = ~cond_state | hazard;
 	assign mem_read_out = control_unit_mux_enable == 1'b0 ? mem_read : 1'b0;
 	assign mem_write_out = control_unit_mux_enable == 1'b0 ? mem_write : 1'b0;
@@ -103,16 +111,9 @@ module ID_Stage(
 	);
 
 
-	Condition_Check condition_check(
-		.cond(instruction_in[31:28]),
-		.SR (status_register_in),
-		.condition_status (cond_state)
-    	);
-
 	assign shift_operand = instruction_in[SHIFT_OPERAND_INDEX:0];
 	assign signed_immediate = instruction_in[23:0];
 	assign dest_reg_out = instruction_in[15:12];
 	assign immediate_out = instruction_in[25];
 
 endmodule
-
