@@ -69,12 +69,12 @@ module ID_Stage(
 		.mode(instruction_in[27:26]),
 		.opcode(instruction_in[24:21]), 
 		.s(instruction_in[20]),
-		. Execute_command (execute_command), 
+		.Execute_command (execute_command), 
 		.mem_read(mem_read), 
 		.mem_write(mem_write),
-		. WB_enable (wb_enable), 
+		.WB_enable (wb_enable), 
 		.B(branch_taken),
-		. status_we (status_write_enable)
+		.status_we (status_write_enable)
 	);
 
 	wire cond_state;
@@ -96,16 +96,16 @@ module ID_Stage(
     		.src1(reg_file_src1), 
 		.src2(reg_file_src2),       
 		.Dest_wb (wb_dest),
-		.result_wb(wb_value),
-    		.writeBackEn (WB_EN),
+		.Result_WB(wb_value),
+    		.writeBackEn(WB_EN),
 		.reg1(reg_file_out1), 
 		.reg2(reg_file_out2)
 	);
 
 
-	Condition_Check condition_check(
+	ConditionCheck condition_check(
 		.cond(instruction_in[31:28]),
-		.SR (status_register_in),
+		.SR(status_register_in),
 		.condition_status (cond_state)
     	);
 

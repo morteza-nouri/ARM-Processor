@@ -74,10 +74,10 @@ module ID_Stage_Reg #(parameter WORD_LEN=32)(
 	always @(posedge clk, posedge rst) 
         if (rst) begin
 			pc_out <= 32'b0;
-			{mem_read_out, mem_write_out, wb_enable_out} <= {3'b0};
 			{branch_taken_out, status_write_enable_out} <= {2'b0};
-			execute_command_out <= 4'b0;
+			{mem_read_out, mem_write_out, wb_enable_out} <= {3'b0};
 			{val_rn_out, val_rm_out} <= {32'b0, 32'b0};
+			execute_command_out <= 4'b0;
 			immediate_out <= 1'b0;
 			signed_immediate_out <= 24'b0;
 			shift_operand_out <= 12'b0;
@@ -94,10 +94,10 @@ module ID_Stage_Reg #(parameter WORD_LEN=32)(
 			if (flush)
 			begin
 				pc_out <= 32'b0;
-				{mem_read_out, mem_write_out, wb_enable_out} <= {3'b0};
 				{branch_taken_out, status_write_enable_out} <= {2'b0};
+				{mem_read_out, mem_write_out, wb_enable_out} <= {3'b0};
+				{val_rn_out, val_rm_out} <= {32'b0, 32'b0};			
 				execute_command_out <= 4'b0;
-				{val_rn_out, val_rm_out} <= {32'b0, 32'b0};
 				immediate_out <= 1'b0;
 				signed_immediate_out <= 24'b0;
 				shift_operand_out <= 12'b0;
@@ -109,10 +109,10 @@ module ID_Stage_Reg #(parameter WORD_LEN=32)(
 			else
 			begin
 			  	pc_out <= pc_in;
-				{mem_read_out, mem_write_out, wb_enable_out} <= {mem_read_in, mem_write_in, wb_enable_in};
 				{branch_taken_out, status_write_enable_out} <= {branch_taken_in, status_write_enable_in};
-				execute_command_out <= execute_command_in;
+				{mem_read_out, mem_write_out, wb_enable_out} <= {mem_read_in, mem_write_in, wb_enable_in};
 				{val_rn_out, val_rm_out} <= {val_rn_in, val_rm_in};
+				execute_command_out <= execute_command_in;
 				immediate_out <= immediate_in;
 				signed_immediate_out <= signed_immediate_in;
 				shift_operand_out <= shift_operand_in;

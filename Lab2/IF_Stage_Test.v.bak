@@ -6,11 +6,9 @@ module IF_Stage_Test();
     wire [31:0] ID_PC, ID_Reg_PC, EXE_PC, EXE_Reg_PC, MEM_PC, MEM_Reg_PC, WB_PC, WB_Reg_PC;
     wire hazard = 1'b0 , freeze_MEM = 1'b0;
 
-    IF_Stage if_stage (.clk(clk), .rst(rst), .freeze(freeze | freeze_MEM), .Branch_taken(Branch_taken),
-	.BranchAddr(BranchAddr), .PC(IF_PC), .Instruction(IF_Instruction));
+    IF_Stage if_stage (.clk(clk), .rst(rst), .freeze(freeze | freeze_MEM), .Branch_taken(Branch_taken), .BranchAddr(BranchAddr), .PC(IF_PC), .Instruction(IF_Instruction));
 
-    IF_Stage_Reg if_state_reg (.clk(clk), .rst(rst), .freeze(freeze | freeze_MEM), .flush(flush), 
-	.PC_in(IF_PC), .Instruction_in(IF_Instruction), .PC(IF_Reg_PC), .Instruction(IF_Reg_Instruction));
+    IF_Stage_Reg if_state_reg (.clk(clk), .rst(rst), .freeze(freeze | freeze_MEM), .flush(flush), .PC_in(IF_PC), .Instruction_in(IF_Instruction), .PC(IF_Reg_PC), .Instruction(IF_Reg_Instruction));
 
     wire [3:0] actual_status_register_out;
     wire mem_read_ID, mem_read_ID_Reg;

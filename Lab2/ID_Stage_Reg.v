@@ -31,12 +31,10 @@ module ID_Stage_Reg #(parameter WORD_LEN=32)(
 	shift_operand_out, 
 	dest_reg_out,
 	status_register_out,
-
 	src1_in,
 	src2_in,
 	src1_out,
 	src2_out,
-
 	freeze
 );
 	parameter       ADDRESS_LEN = 32 ,
