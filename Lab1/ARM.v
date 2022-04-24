@@ -1,4 +1,4 @@
-module IF_Stage_Test();
+module ARM();
     
     reg clk = 1'b0, rst = 1'b0, freeze = 1'b0, Branch_taken = 1'b0, flush = 1'b0;
     reg [31:0] BranchAddr = 32'b0;

@@ -12,7 +12,7 @@ module IF_Stage (
 
     Adder #(.DATA_LENGH(32)) incrementer(.a(pc_reg_out), .b(4), .sum(PC));
 
-    InstructionMemory #(.WORD_LEN(32)) instMemory(.addr(pc_reg_out), .inst(Instruction));
+    InstructionMemory #(.WORD_LEN(32)) instMemory(.clk(clk), .rst(rst), .addr(pc_reg_out), .inst(Instruction));
 
 
 endmodule

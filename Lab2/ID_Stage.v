@@ -1,118 +1,106 @@
-
-module ID_Stage(
-	clk,
-	rst,
-	PC_in,
-	instruction_in,
-	hazard,
-	status_register_in,	
-	wb_dest,
-	wb_value,
-	WB_EN,
-	PC,
-	mem_read_out, 
-	mem_write_out, 
-	wb_enable_out,
-	execute_command_out,
-	branch_taken_out, 
-	status_write_enable_out,
-	reg_file_out1, 
-	reg_file_out2,
-	two_src,
-	src1_out, 
-	src2_out,
-	immediate_out,
-	signed_immediate,
-	shift_operand,
-	dest_reg_out 
+module ID_Stage (
+	input clk,
+	input rst,
+	//from IF Reg
+	input [31:0] Instruction,
+	//from WB stage
+	input [31:0] Result_WB,
+	input writeBackEn,
+	input [3:0] Dest_wb,
+	//from hazard detect module
+	input hazard,
+	//from Status register
+	input [3:0] SR,
+	//to next stage
+	output WB_EN,
+	output MEM_R_EN,
+	output MEM_W_EN,
+	output B,
+	output S,
+	output [3:0] EXE_CMD,
+	output [31:0] Val_Rn,
+	output [31:0] Val_Rm,
+	output imm,
+	output [11:0] Shift_operand,
+	output [23:0] Signed_imm_24,
+	output [3:0] Dest,
+	//to hazard detect module and forwarding unit
+	output [3:0] src1,
+	output [3:0] src2,
+	output Two_src,
+	output is_Rn_valid
 );
-	parameter       ADDRESS_LEN = 32 ,
-			EXECUTE_COMMAND_LEN = 4 ,
-			REGISTER_LEN = 32 ,
-			SHIFT_OPERAND_LEN = 12 ,
-			REGFILE_ADDRESS_LEN = 4 ,
-			INSTRUCTION_LEN = 32 ,
-			SHIFT_OPERAND_INDEX = 11 ;
-
-	input clk;
-	input rst;
-	input[ADDRESS_LEN - 1: 0] PC_in;
-	input[INSTRUCTION_LEN - 1:0] instruction_in;
-	input hazard;
-	input [3:0] status_register_in;
-	input [REGFILE_ADDRESS_LEN - 1 : 0] wb_dest;
-	input [REGISTER_LEN - 1 : 0] wb_value;
-	input WB_EN;
-	output[ADDRESS_LEN - 1: 0] PC;
-	output mem_read_out, mem_write_out, wb_enable_out;
-	output [EXECUTE_COMMAND_LEN - 1:0] execute_command_out;
-	output branch_taken_out, status_write_enable_out;
-	output [REGISTER_LEN - 1:0] reg_file_out1, reg_file_out2;
-	output two_src;
-	output [REGFILE_ADDRESS_LEN - 1 : 0] src1_out, src2_out;
-	output immediate_out;
-	output [23:0] signed_immediate;
-	output [SHIFT_OPERAND_LEN - 1:0] shift_operand;
-	output [REGFILE_ADDRESS_LEN - 1:0] dest_reg_out; /* = Rd */
-
-	assign PC = PC_in;
-	assign src1_out = instruction_in[19:16];
-	wire two_src_mem_write_en;
-	wire control_unit_mux_enable;
-	wire mem_write;
-	assign two_src_mem_write_en = control_unit_mux_enable == 1'b0 ? mem_write : 1'b0;
-	assign two_src = (~instruction_in[25]) | (two_src_mem_write_en);
-	wire mem_read, wb_enable, branch_taken, status_write_enable;
-	wire [EXECUTE_COMMAND_LEN - 1:0] execute_command;
-
-	ControlUnit control_unit(
-		.mode(instruction_in[27:26]),
-		.opcode(instruction_in[24:21]), 
-		.s(instruction_in[20]),
-		.Execute_command (execute_command), 
-		.mem_read(mem_read), 
-		.mem_write(mem_write),
-		.WB_enable (wb_enable), 
-		.B(branch_taken),
-		.status_we (status_write_enable)
-	);
-
-	wire cond_state;
-	assign control_unit_mux_enable = ~cond_state | hazard;
-	assign mem_read_out = control_unit_mux_enable == 1'b0 ? mem_read : 1'b0;
-	assign mem_write_out = control_unit_mux_enable == 1'b0 ? mem_write : 1'b0;
-	assign wb_enable_out = control_unit_mux_enable == 1'b0 ? wb_enable : 1'b0;
-	assign branch_taken_out = control_unit_mux_enable == 1'b0 ? branch_taken : 1'b0;
-	assign status_write_enable_out = control_unit_mux_enable == 1'b0 ? status_write_enable : 1'b0;
-	assign execute_command_out = control_unit_mux_enable == 1'b0 ? execute_command : 4'b0;
-	wire[REGFILE_ADDRESS_LEN - 1:0] reg_file_src1, reg_file_src2;
-	assign reg_file_src1 = instruction_in[19:16];
-	assign reg_file_src2 = mem_write_out ? instruction_in[15:12] : instruction_in[3:0];
-	assign src2_out = reg_file_src2; 
-
-	RegisterFile register_file(
-		.clk(clk), 
-		.rst(rst),
-    		.src1(reg_file_src1), 
-		.src2(reg_file_src2),       
-		.Dest_wb (wb_dest),
-		.Result_WB(wb_value),
-    		.writeBackEn(WB_EN),
-		.reg1(reg_file_out1), 
-		.reg2(reg_file_out2)
-	);
+	wire [3:0] Rn, Rd, Rm;
+	assign Rn = Instruction[19:16];
+	assign Rd = Instruction[15:12];
+	assign Rm = Instruction[3:0];
 
 
-	ConditionCheck condition_check(
-		.cond(instruction_in[31:28]),
-		.SR(status_register_in),
-		.condition_status (cond_state)
-    	);
+	assign imm = Instruction[25];
+	assign Signed_imm_24 = Instruction[23:0];
+	assign Shift_operand = Instruction[11:0];
+	assign Dest = Rd;
 
-	assign shift_operand = instruction_in[SHIFT_OPERAND_INDEX:0];
-	assign signed_immediate = instruction_in[23:0];
-	assign dest_reg_out = instruction_in[15:12];
-	assign immediate_out = instruction_in[25];
+	wire [1:0] mode;
+	wire [3:0] opcode, cond;
+	wire S_in;
+	assign cond = Instruction[31:28];
+	assign mode = Instruction[27:26];
+	assign opcode = Instruction[24:21];
+	assign S_in = Instruction[20];
+
+	//to hazard detect module
+	assign Two_src = ~imm | MEM_W_EN;
+	assign src1 = Rn;
+	assign src2 = MEM_W_EN? Rd: Rm;
+	assign is_Rn_valid = ((opcode == 4'b1101) //MOV
+				| (opcode == 4'b1111) //MVN
+				| (Instruction == 32'b11100000000000000000000000000000)) //NOP
+				? 1'b0: 1'b1; //This is used in hazard detection unit
+
+	//register file module 
+	RegisterFile registerfile (
+			.clk(clk), 
+			.rst(rst), 
+			.src1(src1), 
+			.src2(src2), 
+			.Dest_wb(Dest_wb), 
+			.Result_WB(Result_WB), 
+			.writeBackEn(writeBackEn), 
+			.reg1(Val_Rn), 
+			.reg2(Val_Rm)
+			);
+
+	//condition check
+	wire MetCondition;
+
+	ConditionCheck conditioncheck(
+			.cond(cond), 
+			.SR(SR), 
+			.condition_status(MetCondition)
+			);
+
+	//control unit and control signals
+	wire CU_WB_EN, CU_MEM_R_EN, CU_MEM_W_EN, CU_B, CU_S;
+	wire [3:0] CU_EXE_CMD;
+
+	ControlUnit controlunit (
+			.mode(mode), 
+			.opcode(opcode), 
+			.s(S_in), 
+			.WB_enable(CU_WB_EN), 
+			.mem_read(CU_MEM_R_EN), 
+			.mem_write(CU_MEM_W_EN), 
+			.B(CU_B), 
+			.status_we(CU_S), 
+			.Execute_command(CU_EXE_CMD)
+			);
+
+	//control signals multiplexer
+	wire control_signals_sel;
+	assign control_signals_sel = ~MetCondition | hazard;
+	
+	assign {WB_EN, MEM_R_EN, MEM_W_EN, B, S, EXE_CMD}
+		= ~control_signals_sel? {CU_WB_EN, CU_MEM_R_EN, CU_MEM_W_EN, CU_B, CU_S, CU_EXE_CMD} : 9'b0;	
 
 endmodule
-
