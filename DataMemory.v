@@ -3,7 +3,7 @@ module DataMemory(clk, rst, MEMread, MEMwrite, address, data, MEM_Result);
     input [31:0] address, data;
     output [31:0] MEM_Result;
     
-    reg [7:0] memory [0:4096];
+    reg [7:0] memory [0:2048];
 
     wire [31:0] adr_minus_1024 = (address - 1024);
     wire [31:0] final_adr = {adr_minus_1024[31:2] ,2'b00};

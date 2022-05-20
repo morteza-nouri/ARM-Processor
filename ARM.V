@@ -61,7 +61,7 @@ ID_Stage id_stage(
   .clk(clk), 
   .rst(rst), 
   .wb_wb_en(wb_wb_en), 
-  .hazard(freeze),
+  .freeze(freeze),
   .dest_wb(dest_wb), 
   .sr(status_register_out),
   .instruction(id_instruction), 
@@ -69,7 +69,8 @@ ID_Stage id_stage(
   .wb_en(id_wb_en), 
   .mem_r_en(id_mem_r_en), 
   .mem_w_en(id_mem_w_en), 
-  .b(id_b), .s(id_s), 
+  .b(id_b), 
+  .s(id_s), 
   .imm(id_imm), 
   .two_src(id_two_src),
   .exe_cmd(id_exe_cmd), 
@@ -121,25 +122,24 @@ ID_Stage_Reg id_stage_reg(
 
 //----------------------------------------------------------------------------
 EXE_Stage exe_stage (
-  .clk(clk),
-  .exe_cmd(id_reg_exe_cmd),
   .mem_r_en(id_reg_mem_r_en), 
   .mem_w_en(id_reg_mem_w_en),
-  .pc(id_reg_pc), 
-  .val_rn(id_reg_val_rn), 
-  .val_rm_in(id_reg_val_rm),
   .imm(id_reg_imm),
-  .shift_operand(id_reg_shift_operand),
-  .signed_imm_24(id_reg_signed_imm_24),
-  .sr(id_reg_sr), 
   .sel_src1(sel_src1), 
   .sel_src2(sel_src2),
-	.wb_value(wb_value), 
-  .mem_addr(exe_reg_alu_result),
+  .exe_cmd(id_reg_exe_cmd),
+  .sr(id_reg_sr), 
+  .shift_operand(id_reg_shift_operand),
+  .signed_imm_24(id_reg_signed_imm_24),
+  .pc(id_reg_pc), 
+  .val_rn(id_reg_val_rn), 
+  .val_rm(id_reg_val_rm),
+	.val_wb_stage(wb_value),
+  .val_mem_stage(exe_reg_alu_result),
+  .status(exe_sr), 
   .alu_result(exe_alu_result), 
   .br_addr(branch_address),
-  .status(exe_sr), 
-  .val_rm(exe_val_rm)
+  .val_rm_out(exe_val_rm)
   );
 
 EXE_Stage_Reg  exe_stage_reg (
@@ -208,7 +208,7 @@ StatusRegister status_register(
   .clk(clk), 
   .rst(rst), 
   .in(exe_sr), 
-  .S(id_reg_s), 
+  .S(id_reg_s),
   .out(status_register_out)
   );
 
@@ -233,7 +233,6 @@ ForwardingUnit forward_unit(
   .mem_dest(exe_reg_dest),
 	.wb_wb_en(wb_wb_en), 
   .mem_wb_en(mem_wb_en), 
-  .enable(forward_en),
 	.sel_src1(sel_src1), 
   .sel_src2(sel_src2)
   );

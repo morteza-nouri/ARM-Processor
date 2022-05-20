@@ -6,8 +6,8 @@ module IF_Stage_Reg (
 
   always @ (posedge clk, posedge rst) begin
     if (rst) begin
-      pc <= 0;
-      instruction <= 0;
+      pc <= 32'b0;
+      instruction <= 32'b0;
     end
     else begin
       if (~freeze) begin

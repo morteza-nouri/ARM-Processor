@@ -1,6 +1,6 @@
 
 module  ID_Stage (
-  input clk, rst, wb_wb_en, hazard,
+  input clk, rst, wb_wb_en, freeze,
   input[3:0] dest_wb, sr,
   input[31:0] instruction, result_wb,
   output wb_en, mem_r_en, mem_w_en, b, s, imm, two_src,
@@ -23,11 +23,11 @@ module  ID_Stage (
   assign rm = instruction[3:0];
   assign rd = instruction[15:12];
 
-
   assign dest = rd;
   assign signed_imm_24 = instruction[23:0];
   assign shift_operand = instruction[11:0];
 
+  MUX2to1 # (.WIDTH(4)) mux_rm_rd (.first(rm), .second(rd), .sel(mem_w_en), .out(mux_reg_out));
 
   RegisterFile # (.WIDTH(32)) registerfile (
     .clk(clk), 
@@ -41,19 +41,10 @@ module  ID_Stage (
     .reg2(val_rm)
     );
 
-
-  MUX2to1 # (.WIDTH(4)) mux_rm_rd
-    (.first(rm), .second(rd), .sel(mem_w_en), .out(mux_reg_out));
-
-  MUX2to1 # (.WIDTH(9)) mux_ctrl
-    (.first(ctrl_out), .second(9'b0), .sel(cond_haz_out), .out(mux_ctrl_out));
-
   // Condition Check
-  ConditionCheck cond_check (
-    .cond(cond), .sr(sr), .out(cond_out)
-    );
+  ConditionCheck cond_check (.cond(cond), .sr(sr), .out(cond_out));
 
-  assign cond_haz_out = ~cond_out | hazard;
+  assign cond_haz_out = ~cond_out | freeze;
 
   assign two_src = ~imm | mem_w_en;
   assign first_src = rn;
@@ -70,6 +61,8 @@ module  ID_Stage (
     .mem_read(ctrl_out[7]), 
     .WB_enable(ctrl_out[8])
     );
+
+  MUX2to1 # (.WIDTH(9)) mux_ctrl (.first(ctrl_out), .second(9'b0), .sel(cond_haz_out), .out(mux_ctrl_out));
 
     assign s = mux_ctrl_out[0];
     assign b = mux_ctrl_out[1];

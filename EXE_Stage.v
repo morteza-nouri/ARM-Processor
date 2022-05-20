@@ -1,40 +1,32 @@
 
 module EXE_Stage (
-  input clk,
-  input [3:0] exe_cmd,
-  input mem_r_en, mem_w_en,
+  input mem_r_en, mem_w_en, imm,
   input [1:0] sel_src1, sel_src2,
-  input [31:0] pc, val_rn, val_rm_in,
-  input imm,
+  input [3:0] exe_cmd, sr,
   input [11:0] shift_operand,
   input [23:0] signed_imm_24,
-  input [3:0] sr,
-  output [31:0] alu_result, br_addr, mem_addr, val_rm, wb_value,
-  output [3:0] status
+  input [31:0] pc, val_rn, val_rm, val_mem_stage, val_wb_stage,
+
+  output [3:0] status,
+  output [31:0] alu_result, br_addr, val_rm_out
   );
+
   wire mem_en_out;
   wire [31:0] sign_extend_imm;
-  wire [31:0] val1, val2;
+  wire [31:0] alu_input_1, val2, val2Gen_rm_input;
 
   // //Branch Address Calculator
   assign sign_extend_imm = $signed(signed_imm_24) << 2;
 
   Adder #(.WIDTH(32)) br_addr_adder (.first(pc), .second(sign_extend_imm), .out(br_addr));
 
-
-  MUX3to1 val_rm_mux (
-     .first(val_rm_in), .second(mem_addr), .third(wb_value), .sel(sel_src2), .out(val_rm)
-     );
-
-
-  MUX3to1 val1_mux (
-     .first(val_rn), .second(mem_addr), .third(wb_value), .sel(sel_src1), .out(val1)
-     );
-
   assign mem_en_out = mem_r_en | mem_w_en;
 
+  MUX4to1 #(.WIDTH(32)) mux_before_alu1(val_rn, val_mem_stage, val_wb_stage, val_rn, sel_src1, alu_input_1);
+  MUX4to1 #(.WIDTH(32)) mux_before_alu2(val_rm, val_mem_stage, val_wb_stage, val_rm, sel_src2, val2Gen_rm_input);
+
   Val2Generator val2_generator (
-    .Val_Rm(val_rm),
+    .Val_Rm(val2Gen_rm_input),
     .imm(imm),
     .Shift_operand(shift_operand),
     .is_ldr_or_str(mem_en_out),
@@ -42,11 +34,14 @@ module EXE_Stage (
     );
 
     ALU alu (
-      .val1(val1), .val2(val2),
-      .exe_cmd(exe_cmd), .sr(sr),
+      .val1(alu_input_1), 
+      .val2(val2),
+      .exe_cmd(exe_cmd), 
+      .sr(sr),
       .alu_result(alu_result),
       .status(status)
     );
 
-endmodule
+  assign val_rm_out = val2Gen_rm_input;
 
+endmodule
