@@ -16,7 +16,7 @@ module ForwardingUnit (
             sel_src2 = 2'b01;
         end
     end
-    else if (wb_wb_en) begin
+    if (wb_wb_en) begin
         if (wb_dest == src1) begin
             sel_src1 = 2'b10;
         end
@@ -27,12 +27,12 @@ module ForwardingUnit (
     end
 	end
 
-  // assign sel_src1 = (mem_wb_en && mem_dest == src1) ? 2'b01 :
-  //                   (wb_wb_en && wb_dest == src1) ? 2'b10 : 2'b00;
+//   assign sel_src1 = (mem_wb_en && mem_dest == src1) ? 2'b01 :
+//                     (wb_wb_en && wb_dest == src1) ? 2'b10 : 2'b00;
 
 
-  // assign sel_src2 = (mem_wb_en && mem_dest == src2) ? 2'b01 :
-  //                   (wb_wb_en && wb_dest == src2) ? 2'b10 : 2'b00;
+//   assign sel_src2 = (mem_wb_en && mem_dest == src2) ? 2'b01 :
+//                     (wb_wb_en && wb_dest == src2) ? 2'b10 : 2'b00;
 
 
 

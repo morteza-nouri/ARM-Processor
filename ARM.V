@@ -220,6 +220,7 @@ HazardDetectionUnit hazard_detector(
   .Mem_Dest(exe_reg_dest),
 	.two_src(id_two_src),
   .Exe_WB_En(id_reg_wb_en), 
+  .Exe_MEM_R_En(id_reg_mem_r_en),
   .Mem_WB_En(exe_reg_wb_en), 
   .hazard_Detected(freeze),
 	.forward_en(forward_en)
