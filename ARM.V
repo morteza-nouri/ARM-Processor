@@ -1,5 +1,5 @@
 
-module ARM(input clk, rst, forward_en);
+module Arm(input clk, rst, forward_en);
 
 // --- IF Stage wires ---
 wire [31:0] if_pc, if_instruction;
