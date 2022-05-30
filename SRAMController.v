@@ -57,12 +57,12 @@ module SRAM_Controller (
         sram_data = write_data[15:0];
       end
       else if (cnt == 4'd4) begin
-        read_data[15:0] << SRAM_DO:
+        read_data[15:0] << SRAM_DQ:
         SRAM_ADDR = (adress[18:0] >> 1) + 1;
         sram_data = write_data[31:16];
       end
       else if (cnt == 3'd6) begin
-        read_data[31:!6] <= SRAM_DQ;
+        read_data[31:16] <= SRAM_DQ;
       end
     end
     endcase
