@@ -1,5 +1,5 @@
 
-module Arm(input clk, rst, forward_en);
+module Arm(input clk, rst, forward_en, inout[15:0] SRAM_DQ, output[17:0] SRAM_ADDR, output SRAM_WE_N);
 
 // --- IF Stage wires ---
 wire [31:0] if_pc, if_instruction;
@@ -32,7 +32,10 @@ wire [3:0] status_register_out;
 
 // --- Hazaed Detection Unit ---
 wire freeze;
+wire hazard;
+wire sram_ready;
 
+or f(freeze, ~sram_ready, hazard); // for handling sram hazard
 
 //----------------------------------------------------------------------------
 IF_Stage if_stage(
@@ -61,7 +64,7 @@ ID_Stage id_stage(
   .clk(clk), 
   .rst(rst), 
   .wb_wb_en(wb_wb_en), 
-  .freeze(freeze),
+  .freeze(hazard),
   .dest_wb(dest_wb), 
   .sr(status_register_out),
   .instruction(id_instruction), 
@@ -86,6 +89,7 @@ ID_Stage id_stage(
 ID_Stage_Reg id_stage_reg(
   .clk(clk), 
   .rst(rst), 
+  .ld(sram_ready),
   .flush(flush),
   .wb_en_in(id_wb_en), 
   .mem_r_en_in(id_mem_r_en), 
@@ -145,6 +149,7 @@ EXE_Stage exe_stage (
 EXE_Stage_Reg  exe_stage_reg (
   .clk(clk), 
   .rst(rst),
+  .ld(sram_ready),
   .wb_en_in(id_reg_wb_en), 
   .mem_r_en_in(id_reg_mem_r_en), 
   .mem_w_en_in(id_reg_mem_w_en),
@@ -173,12 +178,21 @@ MEM_Stage  mem_stage (
   .wb_en_out(mem_wb_en),
   .alu_result_out(mem_alu_result), 
   .mem_data(mem_mem_data),
-  .dest_out(mem_dest)
+  .dest_out(mem_dest),
+  .sram_ready(sram_ready),
+  .SRAM_DQ(SRAM_DQ),
+  .SRAM_ADDR(SRAM_ADDR),
+  .SRAM_WE_N(SRAM_WE_N),
+  .SRAM_UB_N(),
+  .SRAM_LB_N(),
+  .SRAM_CE_N(),
+  .SRAM_OE_N()
   );
 
 MEM_Stage_Reg  mem_stage_reg(
   .clk(clk), 
   .rst(rst), 
+  .ld(sram_ready),
   .WB_en_in(mem_wb_en), 
   .Mem_R_en_in(mem_mem_r_en),
   .ALU_result_in(mem_alu_result), 
@@ -222,7 +236,7 @@ HazardDetectionUnit hazard_detector(
   .Exe_WB_En(id_reg_wb_en), 
   .Exe_MEM_R_En(id_reg_mem_r_en),
   .Mem_WB_En(exe_reg_wb_en), 
-  .hazard_Detected(freeze),
+  .hazard_Detected(hazard),
 	.forward_en(forward_en)
   );
 

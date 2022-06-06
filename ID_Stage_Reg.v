@@ -1,5 +1,5 @@
 module ID_Stage_Reg (
-  input clk, rst, flush,
+  input clk, rst, ld, flush,
   input wb_en_in, mem_r_en_in, mem_w_en_in, b_in, s_in, imm_in,
   input [3:0] exe_cmd_in, dest_in, sr_in, src1_in, src2_in,
   input [11:0] shift_operand_in,
@@ -30,7 +30,7 @@ module ID_Stage_Reg (
         signed_imm_24,
         dest, src1, src2} = 152'b0;
 	 end
-    else begin
+    else if(ld) begin
     {wb_en, mem_r_en, mem_w_en, b, s,exe_cmd,
       pc, val_rn, val_rm,
       imm,

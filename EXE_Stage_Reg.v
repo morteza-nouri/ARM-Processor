@@ -1,5 +1,5 @@
 module EXE_Stage_Reg (
-  input clk, rst,
+  input clk, rst, ld,
   input wb_en_in, mem_r_en_in, mem_w_en_in,
   input [31:0] alu_result_in, val_rm_in,
   input [3:0] dest_in,
@@ -11,7 +11,7 @@ module EXE_Stage_Reg (
     if (rst) begin
       {wb_en, mem_r_en, mem_w_en,alu_result, val_rm, dest} = 71'b0;
     end
-    else begin
+    else if(ld) begin
       {wb_en, mem_r_en, mem_w_en, alu_result, val_rm, dest} = 
       {wb_en_in, mem_r_en_in, mem_w_en_in, alu_result_in, val_rm_in, dest_in};
     end
